@@ -94,14 +94,87 @@ fun AppScreen() {
             // OutlinedTextField is scrollable by default when content exceeds bounds
         )
 
-        // Area for the button and retractable rectangle (takes up the remaining 2/3 of the screen)
+        // Area for the buttonF, rectF, buttonS, and displayH (takes up the remaining 2/3 of the screen)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(2f) // Take up the remaining 2 units of weight
-                .padding(16.dp) // Add some padding around this area
+                .padding(horizontal=16.dp, vertical = 8.dp) // Add some padding around this area
         ) {
-            // ButtonF (Round Orange Button)
+            // Column to hold buttonS and displayH
+            Column(
+                modifier = Modifier
+                    .fillMaxSize() // Fill the parent Box
+            ) {
+                // Box for buttonS to align it top-end
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp) // Padding below the button
+                ) {
+                    // ButtonS (Send Button)
+                    Button(
+                        onClick = {
+                            // Evaluate the expression and add to history
+                            val result = evaluateExpression(inputText) // Call the placeholder function
+                            calculationHistory.add(Pair(inputText, result))
+                            inputText = "" // Clear the input field
+                        },
+                        modifier = Modifier
+                            .align(Alignment.TopEnd) // Align to the top right of the Box
+                            .size(48.dp), // Small size for the button
+                        shape = CircleShape, // Make it round
+                        colors = ButtonDefaults.buttonColors(containerColor = Color.Blue) // Blue background
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Send, // Use the built-in send icon
+                            contentDescription = "Send",
+                            tint = Color.White // White icon color
+                        )
+                    }
+                }
+
+                // Display Area (History)
+                OutlinedTextField(
+                    value = buildAnnotatedString {
+                        // Display history, most recent at the bottom, with color changes
+                        calculationHistory.forEachIndexed { index, entry ->
+                            val isLatest = index == calculationHistory.lastIndex
+                            val textColor = if (isLatest) Color.Black else Color.Gray
+
+                            // Display input in grey
+                            withStyle(style = SpanStyle(color = Color.Gray)) {
+                                append("${entry.first}\n")
+                            }
+                            // Display result in black or grey
+                            withStyle(style = SpanStyle(color = textColor, fontWeight = if (isLatest) FontWeight.Bold else FontWeight.Normal)) {
+                                append("${entry.second}\n")
+                            }
+                            // Add extra space between entries for better readability
+                            if (index < calculationHistory.lastIndex) {
+                                append("\n")
+                            }
+                        }
+                    },
+                    onValueChange = { /* Not editable by user */ },
+                    readOnly = true, // Make it read-only
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f) // Take up the remaining vertical space in this Column
+                        .background(Color.White), // White background
+                    textStyle = androidx.compose.ui.text.TextStyle(color = Color.Black), // Default text color (will be overridden by SpanStyle)
+                    colors = TextFieldDefaults.outlinedTextFieldColors( // Customize colors
+                        focusedBorderColor = Color.Transparent, // Remove border
+                        unfocusedBorderColor = Color.Transparent, // Remove border
+                        cursorColor = Color.Transparent // Hide cursor
+                    ),
+                    // OutlinedTextField is scrollable by default
+                )
+            }
+
+
+            
+            // ButtonF (Round Orange Button) - Positioned relative to the parent Box
             Button(
                 onClick = { isRectFVisible = true }, // Show rectF when clicked
                 modifier = Modifier
@@ -114,7 +187,7 @@ fun AppScreen() {
                 Text(text = "+", color = Color.Black, fontSize = 20.sp) // Example text
             }
 
-            // RectF (Retractable Scientific Functions Rectangle)
+            // RectF (Retractable Scientific Functions Rectangle) - Positioned relative to the parent Box
             // Use AnimatedVisibility for slide in/out animation
             androidx.compose.animation.AnimatedVisibility(
                 visible = isRectFVisible, // Control visibility with the state
@@ -185,6 +258,24 @@ fun ScientificFunctionButton(
         contentPadding = PaddingValues(0.dp) // Remove default padding
     ) {
         Text(text = symbol, color = Color.Black, fontSize = 12.sp) // Black text
+    }
+}
+
+// Placeholder function to evaluate the expression
+// TODO: Implement actual expression evaluation logic here
+fun evaluateExpression(expression: String): String {
+    // This is a simple placeholder. In a real calculator, you would parse and evaluate the expression.
+    return try {
+        // Example: Basic evaluation (not a full-fledged expression parser)
+        // This would require a proper math evaluation library
+        // For now, just return the input with " = Result"
+        if (expression.isNotBlank()) {
+            "$expression = Result" // Placeholder result
+        } else {
+            "Enter an expression"
+        }
+    } catch (e: Exception) {
+        "Error: ${e.message}" // Placeholder error handling
     }
 }
 
